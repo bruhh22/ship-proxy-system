@@ -1,0 +1,42 @@
+# Ship Proxy Client Dependencies
+
+# Core Python standard library modules used:
+# - socket (TCP networking to offshore proxy)
+# - threading (concurrent request handling + background processing)
+# - logging (structured logging and debugging)
+# - http.server (HTTP proxy server implementation)
+# - queue (sequential request processing queue)
+# - argparse (command line argument parsing)
+# - signal (graceful shutdown handling)
+# - urllib.parse (URL parsing and validation)
+# - sys, os, time, io (system utilities)
+
+# No external dependencies required - using Python 3.12 standard library only
+# This approach keeps the Docker image lightweight and reduces attack surface
+
+# Optional dependencies for enhanced functionality (uncomment if needed):
+
+# requests==2.31.0         # Alternative HTTP client (more user-friendly than http.client)
+# urllib3==2.0.7           # Advanced HTTP connection pooling and retry logic
+# certifi==2023.11.17      # Updated SSL certificate bundle
+
+# Development/Testing dependencies (not needed in production):
+# pytest==7.4.3           # Unit testing framework
+# pytest-mock==3.12.0     # Mocking for tests
+# pytest-asyncio==0.21.1  # Async testing support
+# black==23.11.0           # Code formatting
+# flake8==6.1.0            # Code linting
+# mypy==1.7.1              # Static type checking
+
+# Monitoring/Logging dependencies (optional for production):
+# prometheus-client==0.19.0  # Metrics collection and monitoring
+# structlog==23.2.0          # Enhanced structured logging with context
+# colorlog==6.8.0            # Colored console logging for development
+
+# Performance monitoring (optional):
+# psutil==5.9.6            # System resource monitoring
+# memory-profiler==0.61.0  # Memory usage profiling
+
+# Security enhancements (optional):
+# cryptography==41.0.7     # Enhanced SSL/TLS support
+# pyopenssl==23.3.0        # Alternative SSL implementation

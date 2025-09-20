@@ -1,0 +1,34 @@
+# Offshore Proxy Server Dependencies
+
+# Core Python standard library modules used:
+# - socket (TCP networking)
+# - threading (concurrent connection handling)
+# - logging (structured logging)
+# - http.client (making HTTP requests to target servers)
+# - ssl (HTTPS support)
+# - urllib.parse (URL parsing)
+# - signal (graceful shutdown)
+# - sys, os (system utilities)
+
+# No external dependencies required - using Python 3.12 standard library only
+# This keeps the Docker image lightweight and reduces security vulnerabilities
+
+# Optional dependencies for enhanced functionality (uncomment if needed):
+
+# requests==2.31.0         # Alternative to http.client (more user-friendly)
+# urllib3==2.0.7           # Advanced HTTP client features
+# certifi==2023.11.17      # Updated SSL certificates
+
+# Development/Testing dependencies (not needed in production):
+# pytest==7.4.3           # Unit testing framework  
+# pytest-asyncio==0.21.1  # Async testing support
+# black==23.11.0           # Code formatting
+# flake8==6.1.0            # Code linting
+
+# Monitoring/Logging dependencies (optional):
+# prometheus-client==0.19.0  # Metrics collection
+# structlog==23.2.0          # Enhanced structured logging
+
+# For production deployment (optional):
+# gunicorn==21.2.0         # WSGI server (if converting to WSGI app)
+# supervisor==4.2.5        # Process management
