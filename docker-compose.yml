@@ -1,0 +1,123 @@
+# Docker Compose Configuration for Ship Proxy System
+# This file orchestrates both the Ship Proxy (client) and Offshore Proxy (server)
+# for the cruise ship internet cost optimization system
+
+services:
+  # Offshore Proxy Server - Runs remotely, forwards requests to internet
+  offshore-proxy:
+    build:
+      context: . # Build context is project root
+      dockerfile: server/Dockerfile # Use server-specific Dockerfile
+    container_name: offshore-proxy
+    hostname: offshore-proxy
+    ports:
+      - "9999:9999" # Expose port 9999 for Ship Proxy connection
+    environment:
+      # Server configuration
+      OFFSHORE_HOST: "0.0.0.0" # Listen on all interfaces
+      OFFSHORE_PORT: "9999" # Internal port
+      LOG_LEVEL: "INFO" # Logging level
+      PYTHONUNBUFFERED: "1" # Unbuffered Python output for Docker logs
+    networks:
+      - proxy-network
+    restart: unless-stopped # Auto-restart unless manually stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import socket; s = socket.socket(); s.settimeout(5); s.connect(('localhost', 9999)); s.close()" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.shipproxy.component=offshore-proxy"
+      - "com.shipproxy.description=Offshore proxy server for internet requests"
+
+  # Ship Proxy Client - Runs on ship, accepts browser/curl requests
+  ship-proxy:
+    build:
+      context: . # Build context is project root  
+      dockerfile: client/Dockerfile # Use client-specific Dockerfile
+    container_name: ship-proxy
+    hostname: ship-proxy
+    ports:
+      - "8080:8080" # Expose port 8080 for browser/curl connections
+    environment:
+      # Client configuration - connects to offshore-proxy service
+      OFFSHORE_HOST: "offshore-proxy" # Use Docker service name for internal DNS
+      OFFSHORE_PORT: "9999" # Port of offshore proxy
+      LISTEN_PORT: "8080" # Port to listen on for proxy requests
+      LOG_LEVEL: "INFO" # Logging level
+      PYTHONUNBUFFERED: "1" # Unbuffered Python output for Docker logs
+    depends_on:
+      offshore-proxy:
+        condition: service_healthy # Wait for offshore proxy to be healthy
+    networks:
+      - proxy-network
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import socket; s = socket.socket(); s.settimeout(5); s.connect(('localhost', 8080)); s.close()" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s # Allow more time for client to connect to server
+    labels:
+      - "com.shipproxy.component=ship-proxy"
+      - "com.shipproxy.description=Ship proxy client for browser/curl requests"
+
+# Network configuration
+networks:
+  proxy-network:
+    driver: bridge
+    name: ship-proxy-network
+    labels:
+      - "com.shipproxy.network=internal"
+
+# Optional: Volumes for persistent data (logs, configs, etc.)
+volumes:
+  proxy-logs:
+    driver: local
+    labels:
+      - "com.shipproxy.volume=logs"
+
+# Usage Instructions:
+#
+# 1. Build and start all services:
+#    docker-compose up --build
+#
+# 2. Start in background:
+#    docker-compose up -d --build
+#
+# 3. View logs:
+#    docker-compose logs -f
+#    docker-compose logs ship-proxy
+#    docker-compose logs offshore-proxy
+#
+# 4. Stop services:
+#    docker-compose down
+#
+# 5. Rebuild specific service:
+#    docker-compose build ship-proxy
+#    docker-compose up -d ship-proxy
+#
+# 6. Scale services (if needed):
+#    docker-compose up -d --scale offshore-proxy=2
+#
+# Testing the system:
+#
+# Once started, configure your browser proxy to: http://localhost:8080
+# Or test with curl:
+#   curl -x http://localhost:8080 http://example.com
+#   curl -x http://localhost:8080 https://httpbin.org/get
+#   curl -x http://localhost:8080 -X POST -d "test=data" http://httpbin.org/post
+#
+# Environment Variables Override:
+# You can override any environment variable:
+#   OFFSHORE_HOST=remote.proxy.com docker-compose up
+#   LOG_LEVEL=DEBUG docker-compose up
+#
+# Production Deployment:
+# For production, consider:
+# - Using specific image tags instead of building locally
+# - Adding resource limits
+# - Using external networks
+# - Adding monitoring and alerting
+# - Using secrets for sensitive configuration
